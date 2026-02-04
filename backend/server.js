@@ -74,6 +74,8 @@ app.use('/api/', limiter);
  * Mount route handlers for different endpoints
  */
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/students', require('./routes/student'));
+app.use('/api/companies', require('./routes/company'));
 // Additional routes will be added here (jobs, applications, etc.)
 
 /**
