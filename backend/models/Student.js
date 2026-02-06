@@ -18,21 +18,21 @@ const studentSchema = new mongoose.Schema({
   },
   college: {
     type: String,
-    required: [true, 'Please provide college name']
+    // required: [true, 'Please provide college name'] - Removed for initial registration
   },
   branch: {
     type: String,
-    required: [true, 'Please provide branch/department']
+    // required: [true, 'Please provide branch/department']
   },
   cgpa: {
     type: Number,
-    required: [true, 'Please provide CGPA'],
     min: [0, 'CGPA cannot be negative'],
-    max: [10, 'CGPA cannot be more than 10'] // Assuming 10-point scale
+    max: [10, 'CGPA cannot be more than 10'], // Assuming 10-point scale
+    default: 0
   },
   graduationYear: {
     type: Number,
-    required: [true, 'Please provide graduation year'],
+    // required: [true, 'Please provide graduation year'],
     min: [2020, 'Invalid graduation year'],
     max: [2030, 'Invalid graduation year']
   },

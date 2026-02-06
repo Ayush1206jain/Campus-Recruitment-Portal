@@ -18,12 +18,12 @@ const companySchema = new mongoose.Schema({
   },
   industry: {
     type: String,
-    required: [true, 'Please provide industry type'] // e.g., Software, Finance, Healthcare
+    // required: [true, 'Please provide industry type']
   },
   size: {
     type: String,
     enum: ['1-10', '11-50', '51-100', '101-500', '500+'], // Company size categories
-    required: [true, 'Please provide company size']
+    // required: [true, 'Please provide company size']
   },
   description: {
     type: String,

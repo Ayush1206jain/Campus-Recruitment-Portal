@@ -1,11 +1,13 @@
 const express = require('express');
 const { 
   getStudentProfile, 
-  updateStudentProfile 
+  updateStudentProfile,
+  uploadResume
 } = require('../controllers/studentController');
 
 // Middleware for authentication and authorization
 const { protect, authorize } = require('../middleware/auth');
+const upload = require('../middleware/upload');
 
 const router = express.Router();
 
@@ -27,5 +29,10 @@ router.get('/me', authorize('student'), getStudentProfile);
 // @desc    Update current student's profile
 // @access  Private (Student only)
 router.put('/me', authorize('student'), updateStudentProfile);
+
+// @route   POST /api/students/resume
+// @desc    Upload student resume (PDF)
+// @access  Private (Student only)
+router.post('/resume', authorize('student'), upload.single('resume'), uploadResume);
 
 module.exports = router;

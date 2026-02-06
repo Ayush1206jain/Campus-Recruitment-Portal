@@ -1,5 +1,6 @@
 const Company = require('../models/Company');
 const User = require('../models/User');
+const cloudinary = require('../config/cloudinary');
 
 /**
  * @desc    Get current company profile
@@ -57,10 +58,51 @@ exports.updateCompanyProfile = async (req, res, next) => {
       { new: true, runValidators: true }
     ).populate('user', 'name email');
 
+
     res.status(200).json({
       success: true,
       data: company,
       message: 'Company profile updated successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Upload Company Logo
+ * @route   POST /api/companies/logo
+ * @access  Private (Company only)
+ */
+exports.uploadLogo = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please upload an image file'
+      });
+    }
+
+    // Convert memory buffer to base64 data URI
+    const fileStr = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    
+    // Upload to Cloudinary
+    const uploadResponse = await cloudinary.uploader.upload(fileStr, {
+      folder: 'campus-portal/logos',
+      resource_type: 'image'
+    });
+
+    // Update company profile
+    const company = await Company.findOneAndUpdate(
+      { user: req.user.id },
+      { logo: uploadResponse.secure_url },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      data: company,
+      message: 'Logo uploaded successfully'
     });
   } catch (error) {
     next(error);

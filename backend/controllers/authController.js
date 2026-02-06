@@ -30,7 +30,11 @@ const generateToken = (id) => {
  */
 exports.register = async (req, res, next) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { 
+      name, email, password, role, 
+      college, branch, // Student fields
+      industry, size   // Company fields
+    } = req.body;
 
     // Validate required fields
     if (!name || !email || !password) {
@@ -60,20 +64,20 @@ exports.register = async (req, res, next) => {
 
     // Create role-specific profile
     if (user.role === 'student') {
-      // Create empty student profile with default values
+      // Create empty student profile with default values, or use provided values
       await Student.create({
         user: user._id,
-        college: '',
-        branch: '',
+        college: college || '',
+        branch: branch || '',
         cgpa: 0,
         graduationYear: new Date().getFullYear()
       });
     } else if (user.role === 'company') {
-      // Create empty company profile with default values
+      // Create empty company profile with default values, or use provided values
       await Company.create({
         user: user._id,
-        industry: '',
-        size: '1-10'
+        industry: industry || '',
+        size: size || '1-10'
       });
     }
     // Admin role doesn't need a separate profile
