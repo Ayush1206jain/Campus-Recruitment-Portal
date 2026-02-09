@@ -77,6 +77,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/students', require('./routes/student'));
 app.use('/api/companies', require('./routes/company'));
 app.use('/api/jobs', require('./routes/job'));
+app.use('/api/applications', require('./routes/application'));
 // Additional routes will be added here (jobs, applications, etc.)
 
 /**
