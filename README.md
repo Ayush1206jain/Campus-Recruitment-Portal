@@ -107,6 +107,8 @@ docs/architecture/
 
 ## Architecture Documentation
 
+
+
 ### Available Diagrams
 
 #### Architecture Diagrams
@@ -117,6 +119,8 @@ docs/architecture/
 - Deployment Architecture
 - Security Architecture
 
+![System Architecture](docs/architecture/high-level-architecture.png)
+
 Location:
 
 ```text
@@ -124,6 +128,9 @@ docs/architecture/
 ```
 
 ---
+
+
+
 
 ### Workflow Diagrams
 
@@ -141,24 +148,6 @@ docs/workflows/
 ```
 
 ---
-
-## Screenshots
-
-### Login Page
-
-![Login Page](docs/screenshots/login-page.png)
-
-### Student Dashboard
-
-![Student Dashboard](docs/screenshots/student-dashboard.png)
-
-### Company Dashboard
-
-![Company Dashboard](docs/screenshots/company-dashboard.png)
-
-### Admin Dashboard
-
-![Admin Dashboard](docs/screenshots/admin-dashboard.png)
 
 ## Technical Documentation
 
