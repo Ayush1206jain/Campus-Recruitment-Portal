@@ -107,8 +107,6 @@ docs/architecture/
 
 ## Architecture Documentation
 
-
-
 ### Available Diagrams
 
 #### Architecture Diagrams
@@ -128,9 +126,6 @@ docs/architecture/
 ```
 
 ---
-
-
-
 
 ### Workflow Diagrams
 
@@ -262,16 +257,5 @@ npm run server
 ```bash
 npm start
 ```
-
----
-
-## Future Enhancements
-
-- Interview Scheduling
-- Placement Analytics Dashboard
-- Resume Parsing
-- AI-Based Candidate Matching
-- Notification Center
-- Real-Time Messaging
 
 ---
