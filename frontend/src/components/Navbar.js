@@ -1,6 +1,6 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -8,25 +8,36 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate("/login");
+  };
+
+  const handleBack = () => {
+    navigate(-1);
   };
 
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        <Link to="/" className="navbar-logo">
+        <Link to={user ? "/dashboard" : "/"} className="navbar-logo">
           CampusPortal
         </Link>
         <ul className="nav-menu">
-          <li className="nav-item">
-            <Link to="/" className="nav-links">
-              Home
-            </Link>
-          </li>
+          {!user && (
+            <li className="nav-item">
+              <Link to="/" className="nav-links">
+                Home
+              </Link>
+            </li>
+          )}
           {user ? (
             <>
               <li className="nav-item">
                 <span className="nav-links">Hello, {user.name}</span>
+              </li>
+              <li className="nav-item">
+                <button className="btn-back" onClick={handleBack}>
+                  Back
+                </button>
               </li>
               <li className="nav-item">
                 <button className="btn-logout" onClick={handleLogout}>

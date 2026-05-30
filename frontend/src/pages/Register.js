@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    role: 'student' // default role
+    name: "",
+    email: "",
+    password: "",
+    role: "student", // default role
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const { register } = useAuth();
   const navigate = useNavigate();
 
@@ -20,11 +20,11 @@ const Register = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     const result = await register(formData);
     if (result.success) {
-      navigate('/');
+      navigate("/");
     } else {
       setError(result.message);
     }
@@ -32,7 +32,7 @@ const Register = () => {
 
   return (
     <div className="form-container">
-      <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Register</h2>
+      <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Register</h2>
       {error && <div className="error-message">{error}</div>}
       <form onSubmit={onSubmit}>
         <div className="form-group">

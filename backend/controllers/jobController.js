@@ -1,5 +1,5 @@
-const Job = require('../models/Job');
-const Company = require('../models/Company');
+const Job = require("../models/Job");
+const Company = require("../models/Company");
 
 /**
  * @desc    Create a new job
@@ -13,20 +13,20 @@ exports.createJob = async (req, res, next) => {
     if (!company) {
       return res.status(404).json({
         success: false,
-        message: 'Complete your company profile before posting a job'
+        message: "Complete your company profile before posting a job",
       });
     }
 
     // 2. Create the job, linking it to the company profile
     const job = await Job.create({
       ...req.body,
-      company: company._id // Link to Company document, not User document
+      company: company._id, // Link to Company document, not User document
     });
 
     res.status(201).json({
       success: true,
       data: job,
-      message: 'Job posted successfully'
+      message: "Job posted successfully",
     });
   } catch (error) {
     next(error);
@@ -41,17 +41,21 @@ exports.createJob = async (req, res, next) => {
 exports.getJobs = async (req, res, next) => {
   try {
     // Basic filtering logic (can be expanded later)
-    let query = Job.find({ status: 'Open' }).populate('company', 'industry size website logo'); // Populate company details
+    let query = Job.find({ status: "Open" }).populate({
+      path: "company",
+      select: "industry size website logo description",
+      populate: { path: "user", select: "name" },
+    });
 
     // Sort by newest first
-    query = query.sort('-createdAt');
+    query = query.sort("-createdAt");
 
     const jobs = await query;
 
     res.status(200).json({
       success: true,
       count: jobs.length,
-      data: jobs
+      data: jobs,
     });
   } catch (error) {
     next(error);
@@ -65,18 +69,22 @@ exports.getJobs = async (req, res, next) => {
  */
 exports.getJobById = async (req, res, next) => {
   try {
-    const job = await Job.findById(req.params.id).populate('company', 'industry size website logo description');
+    const job = await Job.findById(req.params.id).populate({
+      path: "company",
+      select: "industry size website logo description",
+      populate: { path: "user", select: "name" },
+    });
 
     if (!job) {
       return res.status(404).json({
         success: false,
-        message: 'Job not found'
+        message: "Job not found",
       });
     }
 
     res.status(200).json({
       success: true,
-      data: job
+      data: job,
     });
   } catch (error) {
     next(error);
@@ -92,15 +100,17 @@ exports.getCompanyJobs = async (req, res, next) => {
   try {
     const company = await Company.findOne({ user: req.user.id });
     if (!company) {
-      return res.status(404).json({ success: false, message: 'Company not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Company not found" });
     }
 
-    const jobs = await Job.find({ company: company._id }).sort('-createdAt');
+    const jobs = await Job.find({ company: company._id }).sort("-createdAt");
 
     res.status(200).json({
       success: true,
       count: jobs.length,
-      data: jobs
+      data: jobs,
     });
   } catch (error) {
     next(error);
@@ -117,7 +127,7 @@ exports.updateJob = async (req, res, next) => {
     let job = await Job.findById(req.params.id);
 
     if (!job) {
-      return res.status(404).json({ success: false, message: 'Job not found' });
+      return res.status(404).json({ success: false, message: "Job not found" });
     }
 
     // Security Check: Ensure the logged-in company owns this job
@@ -125,19 +135,19 @@ exports.updateJob = async (req, res, next) => {
     if (job.company.toString() !== company._id.toString()) {
       return res.status(401).json({
         success: false,
-        message: 'Not authorized to update this job'
+        message: "Not authorized to update this job",
       });
     }
 
     job = await Job.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
-      runValidators: true
+      runValidators: true,
     });
 
     res.status(200).json({
       success: true,
       data: job,
-      message: 'Job updated successfully'
+      message: "Job updated successfully",
     });
   } catch (error) {
     next(error);
@@ -154,7 +164,7 @@ exports.deleteJob = async (req, res, next) => {
     const job = await Job.findById(req.params.id);
 
     if (!job) {
-      return res.status(404).json({ success: false, message: 'Job not found' });
+      return res.status(404).json({ success: false, message: "Job not found" });
     }
 
     // Security Check: Ownership
@@ -162,7 +172,7 @@ exports.deleteJob = async (req, res, next) => {
     if (job.company.toString() !== company._id.toString()) {
       return res.status(401).json({
         success: false,
-        message: 'Not authorized to delete this job'
+        message: "Not authorized to delete this job",
       });
     }
 
@@ -170,7 +180,7 @@ exports.deleteJob = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'Job deleted successfully'
+      message: "Job deleted successfully",
     });
   } catch (error) {
     next(error);

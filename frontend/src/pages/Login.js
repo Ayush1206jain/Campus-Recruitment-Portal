@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -18,11 +18,11 @@ const Login = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    
+    setError("");
+
     const result = await login(email, password);
     if (result.success) {
-      navigate('/');
+      navigate("/dashboard");
     } else {
       setError(result.message);
     }
@@ -30,7 +30,7 @@ const Login = () => {
 
   return (
     <div className="form-container">
-      <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Login</h2>
+      <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Login</h2>
       {error && <div className="error-message">{error}</div>}
       <form onSubmit={onSubmit}>
         <div className="form-group">

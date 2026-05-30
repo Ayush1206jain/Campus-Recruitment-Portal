@@ -244,6 +244,34 @@ EMAIL_USER=your_email
 EMAIL_PASSWORD=your_password
 ```
 
+## Database Setup
+
+This project uses **MongoDB Atlas**.
+
+1. Create a free cluster on MongoDB Atlas.
+2. Create a database user and configure network access.
+3. Copy the cluster connection string.
+4. Add it to the backend `.env` file:
+
+```env
+MONGO_URI=your_mongodb_atlas_connection_string
+```
+
+Example:
+
+```env
+MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/campusRecruitment
+```
+
+5. Start the backend server:
+
+```bash
+cd backend
+npm run server
+```
+
+If the connection is successful, the server will connect automatically to MongoDB Atlas.
+
 ### Run Application
 
 #### Backend

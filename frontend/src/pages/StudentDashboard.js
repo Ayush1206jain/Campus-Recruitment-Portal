@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import api from '../utils/api';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import api from "../utils/api";
+import { Link } from "react-router-dom";
 
 const StudentDashboard = () => {
   const [applications, setApplications] = useState([]);
@@ -9,10 +9,10 @@ const StudentDashboard = () => {
   useEffect(() => {
     const fetchApplications = async () => {
       try {
-        const res = await api.get('/applications/my-applications');
+        const res = await api.get("/applications/my-applications");
         setApplications(res.data.data);
       } catch (error) {
-        console.error('Error fetching applications:', error);
+        console.error("Error fetching applications:", error);
       } finally {
         setLoading(false);
       }
@@ -25,9 +25,31 @@ const StudentDashboard = () => {
     <div className="dashboard-content">
       <div className="dashboard-header">
         <h1>Student Dashboard</h1>
-        <Link to="/jobs" className="btn-primary" style={{ width: 'auto' }}>
-          Browse Jobs
-        </Link>
+        <div style={{ display: "flex", gap: "12px" }}>
+          <Link
+            to="/student/profile?mode=view"
+            state={{ from: "/dashboard" }}
+            className="btn-primary"
+            style={{ width: "auto" }}
+          >
+            View Profile
+          </Link>
+          <Link
+            to="/student/profile?mode=edit"
+            state={{ from: "/dashboard" }}
+            className="btn-primary"
+            style={{
+              width: "auto",
+              backgroundColor: "#6c757d",
+              borderColor: "#6c757d",
+            }}
+          >
+            Edit Profile
+          </Link>
+          <Link to="/jobs" className="btn-primary" style={{ width: "auto" }}>
+            Browse Jobs
+          </Link>
+        </div>
       </div>
 
       <div className="section">
@@ -51,10 +73,12 @@ const StudentDashboard = () => {
                 {applications.map((app) => (
                   <tr key={app._id}>
                     <td>{app.job.title}</td>
-                    <td>{app.job.company.name}</td>
+                    <td>{app.job.company?.user?.name || "Unknown Company"}</td>
                     <td>{new Date(app.appliedAt).toLocaleDateString()}</td>
                     <td>
-                      <span className={`status-badge status-${app.status.toLowerCase()}`}>
+                      <span
+                        className={`status-badge status-${app.status.toLowerCase()}`}
+                      >
                         {app.status}
                       </span>
                     </td>

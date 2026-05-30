@@ -1,9 +1,11 @@
-import React from 'react';
-import { useAuth } from '../context/AuthContext';
-import StudentDashboard from './StudentDashboard';
-import CompanyDashboard from './CompanyDashboard';
+import React from "react";
+import { useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import StudentDashboard from "./StudentDashboard";
+import CompanyDashboard from "./CompanyDashboard";
 
 const Dashboard = () => {
+  const location = useLocation();
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -16,7 +18,24 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-      {user.role === 'student' ? <StudentDashboard /> : <CompanyDashboard />}
+      {location.state?.success && (
+        <div
+          className="success-message"
+          style={{
+            marginBottom: "20px",
+            textAlign: "center",
+            fontSize: "1.2rem",
+            color: "#155724",
+            backgroundColor: "#d4edda",
+            border: "1px solid #c3e6cb",
+            padding: "16px",
+            borderRadius: "8px",
+          }}
+        >
+          {location.state.success}
+        </div>
+      )}
+      {user.role === "student" ? <StudentDashboard /> : <CompanyDashboard />}
     </div>
   );
 };

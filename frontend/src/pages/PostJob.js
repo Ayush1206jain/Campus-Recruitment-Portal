@@ -1,22 +1,23 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import api from '../utils/api';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "../utils/api";
 
 const PostJob = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    requirements: '',
-    location: '',
-    salary: '',
-    deadline: '',
-    type: 'Full-time'
+    title: "",
+    description: "",
+    requirements: "",
+    location: "",
+    salary: "",
+    deadline: "",
+    type: "Full-time",
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const { title, description, requirements, location, salary, deadline, type } = formData;
+  const { title, description, requirements, location, salary, deadline, type } =
+    formData;
 
   const onChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -24,23 +25,27 @@ const PostJob = () => {
   const onSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      await api.post('/jobs', formData);
-      navigate('/dashboard'); // Redirect to dashboard to see the new job
+      await api.post("/jobs", formData);
+      navigate("/dashboard", {
+        state: { success: "Job posted successfully." },
+      });
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to post job');
+      setError(err.response?.data?.message || "Failed to post job");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="form-container" style={{ maxWidth: '800px' }}>
-      <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Post a New Job</h2>
+    <div className="form-container" style={{ maxWidth: "800px" }}>
+      <h2 style={{ textAlign: "center", marginBottom: "20px" }}>
+        Post a New Job
+      </h2>
       {error && <div className="error-message">{error}</div>}
-      
+
       <form onSubmit={onSubmit}>
         <div className="form-group">
           <label>Job Title</label>
@@ -80,7 +85,14 @@ const PostJob = () => {
           ></textarea>
         </div>
 
-        <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+        <div
+          className="form-group"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "20px",
+          }}
+        >
           <div>
             <label>Location</label>
             <input
@@ -105,7 +117,14 @@ const PostJob = () => {
           </div>
         </div>
 
-        <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+        <div
+          className="form-group"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "20px",
+          }}
+        >
           <div>
             <label>Deadline</label>
             <input
@@ -127,9 +146,38 @@ const PostJob = () => {
           </div>
         </div>
 
-        <button type="submit" className="btn-primary" disabled={loading}>
-          {loading ? 'Posting...' : 'Post Job'}
-        </button>
+        <div
+          style={{
+            display: "flex",
+            gap: "12px",
+            alignItems: "center",
+            marginTop: "20px",
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => navigate("/dashboard")}
+            style={{
+              backgroundColor: "#6c757d",
+              color: "#fff",
+              border: "none",
+              borderRadius: "6px",
+              padding: "10px 18px",
+              minWidth: "110px",
+              cursor: "pointer",
+            }}
+          >
+            Back
+          </button>
+          <button
+            type="submit"
+            className="btn-primary"
+            disabled={loading}
+            style={{ minWidth: "120px" }}
+          >
+            {loading ? "Posting..." : "Post Job"}
+          </button>
+        </div>
       </form>
     </div>
   );
