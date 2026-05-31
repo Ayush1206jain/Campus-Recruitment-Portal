@@ -1,8 +1,9 @@
-const User = require('../models/User');
-const Student = require('../models/Student');
-const Company = require('../models/Company');
-const Job = require('../models/Job');
-const Application = require('../models/Application');
+const User = require("../models/User");
+const Student = require("../models/Student");
+const Company = require("../models/Company");
+const Job = require("../models/Job");
+const Application = require("../models/Application");
+const cloudinary = require("../config/cloudinary");
 
 /**
  * @desc    Get System Stats
@@ -12,10 +13,10 @@ const Application = require('../models/Application');
 exports.getStats = async (req, res, next) => {
   try {
     const totalUsers = await User.countDocuments();
-    const students = await User.countDocuments({ role: 'student' });
-    const companies = await User.countDocuments({ role: 'company' });
+    const students = await User.countDocuments({ role: "student" });
+    const companies = await User.countDocuments({ role: "company" });
     const totalJobs = await Job.countDocuments();
-    const activeJobs = await Job.countDocuments({ status: 'Open' });
+    const activeJobs = await Job.countDocuments({ status: "Open" });
     const totalApplications = await Application.countDocuments();
 
     res.status(200).json({
@@ -23,8 +24,8 @@ exports.getStats = async (req, res, next) => {
       data: {
         users: { total: totalUsers, students, companies },
         jobs: { total: totalJobs, active: activeJobs },
-        applications: totalApplications
-      }
+        applications: totalApplications,
+      },
     });
   } catch (error) {
     next(error);
@@ -38,11 +39,11 @@ exports.getStats = async (req, res, next) => {
  */
 exports.getAllUsers = async (req, res, next) => {
   try {
-    const users = await User.find().select('-password').sort('-createdAt');
+    const users = await User.find().select("-password").sort("-createdAt");
     res.status(200).json({
       success: true,
       count: users.length,
-      data: users
+      data: users,
     });
   } catch (error) {
     next(error);
@@ -60,7 +61,9 @@ exports.verifyCompany = async (req, res, next) => {
     const company = await Company.findById(req.params.id);
 
     if (!company) {
-      return res.status(404).json({ success: false, message: 'Company not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Company not found" });
     }
 
     // Toggle verification status
@@ -70,7 +73,7 @@ exports.verifyCompany = async (req, res, next) => {
     res.status(200).json({
       success: true,
       data: company,
-      message: `Company ${company.isVerified ? 'verified' : 'unverified'} successfully`
+      message: `Company ${company.isVerified ? "verified" : "unverified"} successfully`,
     });
   } catch (error) {
     next(error);
@@ -87,18 +90,22 @@ exports.deleteUser = async (req, res, next) => {
     const user = await User.findById(req.params.id);
 
     if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     // Prevent deleting yourself (if you are an admin)
     if (user._id.toString() === req.user.id) {
-      return res.status(400).json({ success: false, message: 'You cannot delete yourself' });
+      return res
+        .status(400)
+        .json({ success: false, message: "You cannot delete yourself" });
     }
 
     // If user is a student/company, delete their profile too
-    if (user.role === 'student') {
+    if (user.role === "student") {
       await Student.findOneAndDelete({ user: user._id });
-    } else if (user.role === 'company') {
+    } else if (user.role === "company") {
       await Company.findOneAndDelete({ user: user._id });
     }
 
@@ -107,8 +114,54 @@ exports.deleteUser = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'User deleted successfully'
+      message: "User deleted successfully",
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Resync resume public_ids for students
+ * @route   POST /api/admin/resync-resumes
+ * @access  Private (Admin only)
+ */
+exports.resyncResumes = async (req, res, next) => {
+  try {
+    const students = await Student.find({ resume: { $ne: null } });
+    let updated = 0;
+    for (const st of students) {
+      try {
+        // Skip if already set
+        if (st.resumePublicId) continue;
+        // Derive public_id from URL
+        const parsed = new URL(st.resume);
+        const afterUpload = parsed.pathname.split("/upload/")[1] || "";
+        const withoutVersion = afterUpload.replace(/^v\d+\//, "");
+        const publicId = withoutVersion.replace(/\.[^/.]+$/, "");
+        if (!publicId) continue;
+        // Verify via Cloudinary Admin API
+        const info = await cloudinary.api.resource(publicId, {
+          resource_type: "raw",
+        });
+        if (info && (info.public_id || info.secure_url)) {
+          st.resumePublicId = info.public_id || publicId;
+          await st.save();
+          updated++;
+        }
+      } catch (err) {
+        // ignore individual failures but log
+        console.error(
+          "resync error for student",
+          st._id,
+          err && err.message ? err.message : err,
+        );
+      }
+    }
+
+    res
+      .status(200)
+      .json({ success: true, message: `Resynced ${updated} students` });
   } catch (error) {
     next(error);
   }

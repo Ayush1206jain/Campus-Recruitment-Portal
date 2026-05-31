@@ -12,6 +12,9 @@ const PostJob = () => {
     salary: "",
     deadline: "",
     type: "Full-time",
+    minCgpa: "",
+    eligibleBranchesText: "",
+    eligibleCourses: [],
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,13 +25,30 @@ const PostJob = () => {
   const onChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
+  const toggleCourse = (course) => {
+    const exists = formData.eligibleCourses.includes(course);
+    const updated = exists
+      ? formData.eligibleCourses.filter((c) => c !== course)
+      : [...formData.eligibleCourses, course];
+    setFormData({ ...formData, eligibleCourses: updated });
+  };
+
   const onSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-      await api.post("/jobs", formData);
+      const payload = {
+        ...formData,
+        minCgpa: parseFloat(formData.minCgpa),
+        eligibleBranches: formData.eligibleBranchesText
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean),
+      };
+
+      await api.post("/jobs", payload);
       navigate("/dashboard", {
         state: { success: "Job posted successfully." },
       });
@@ -123,6 +143,40 @@ const PostJob = () => {
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
             gap: "20px",
+            marginTop: "12px",
+          }}
+        >
+          <div>
+            <label>Minimum CGPA (required)</label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              max="10"
+              name="minCgpa"
+              value={formData.minCgpa}
+              onChange={onChange}
+              placeholder="e.g. 7.5"
+              required
+            />
+          </div>
+          <div>
+            <label>Eligible Job Type</label>
+            <select name="type" value={type} onChange={onChange}>
+              <option value="Full-time">Full-time</option>
+              <option value="Part-time">Part-time</option>
+              <option value="Internship">Internship</option>
+              <option value="Contract">Contract</option>
+            </select>
+          </div>
+        </div>
+
+        <div
+          className="form-group"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "20px",
           }}
         >
           <div>
@@ -148,27 +202,43 @@ const PostJob = () => {
 
         <div
           style={{
-            display: "flex",
-            gap: "12px",
-            alignItems: "center",
-            marginTop: "20px",
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "20px",
+            marginTop: "18px",
+            alignItems: "start",
           }}
         >
-          <button
-            type="button"
-            onClick={() => navigate("/dashboard")}
-            style={{
-              backgroundColor: "#6c757d",
-              color: "#fff",
-              border: "none",
-              borderRadius: "6px",
-              padding: "10px 18px",
-              minWidth: "110px",
-              cursor: "pointer",
-            }}
-          >
-            Back
-          </button>
+          <div>
+            <label>Eligible Branches (comma separated)</label>
+            <input
+              type="text"
+              name="eligibleBranchesText"
+              value={formData.eligibleBranchesText}
+              onChange={onChange}
+              placeholder="e.g. CSE, IT, ECE"
+            />
+          </div>
+          <div>
+            <label>Eligible Courses</label>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {["BTech", "MTech", "MCA", "MSc", "BSc"].map((course) => (
+                <label key={course} style={{ display: "flex", gap: 8 }}>
+                  <input
+                    type="checkbox"
+                    checked={formData.eligibleCourses.includes(course)}
+                    onChange={() => toggleCourse(course)}
+                  />
+                  {course}
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{ display: "flex", justifyContent: "flex-end", marginTop: 12 }}
+        >
           <button
             type="submit"
             className="btn-primary"

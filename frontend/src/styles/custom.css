@@ -348,15 +348,34 @@ ul {
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
+  min-height: 360px;
 }
 
 .job-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 18px 36px rgba(0, 0, 0, 0.08);
+}
+
+.eligibility-badge {
+  display: inline-block;
+  background: #f1f6ff;
+  color: #0b57d0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  margin-right: 8px;
+}
+
+.job-eligibility {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  margin-bottom: 12px;
 }
 
 .job-card-header {
@@ -387,7 +406,7 @@ ul {
 }
 
 .job-card-actions {
-  margin-top: auto;
+  margin-top: 12px;
 }
 
 .job-tag {

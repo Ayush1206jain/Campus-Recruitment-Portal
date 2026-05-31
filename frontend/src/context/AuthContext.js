@@ -31,6 +31,43 @@ export const AuthProvider = ({ children }) => {
     checkLoggedIn();
   }, []);
 
+  // Listen for history navigation (back/forward) and storage changes to keep auth state in sync
+  useEffect(() => {
+    const handlePop = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setUser(null);
+        setIsAuthenticated(false);
+        return;
+      }
+      try {
+        const res = await api.get("/auth/me");
+        setUser(res.data.user);
+        setIsAuthenticated(true);
+      } catch (err) {
+        localStorage.removeItem("token");
+        setUser(null);
+        setIsAuthenticated(false);
+      }
+    };
+
+    const handleStorage = (e) => {
+      if (e.key === "token") {
+        handlePop();
+      }
+    };
+
+    window.addEventListener("popstate", handlePop);
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("pageshow", handlePop);
+
+    return () => {
+      window.removeEventListener("popstate", handlePop);
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("pageshow", handlePop);
+    };
+  }, []);
+
   // Login Function
   const login = async (email, password) => {
     try {

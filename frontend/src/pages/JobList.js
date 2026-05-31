@@ -124,6 +124,24 @@ const JobList = () => {
                 <span>💰 {job.salary || "Not specified"}</span>
                 <span>🕒 {job.experience || "Any experience"}</span>
               </div>
+
+              <div className="job-eligibility" style={{ marginTop: 12 }}>
+                {job.minCgpa !== undefined && job.minCgpa !== null && (
+                  <span className="eligibility-badge">
+                    Min CGPA: {job.minCgpa}
+                  </span>
+                )}
+                {job.eligibleCourses && job.eligibleCourses.length > 0 && (
+                  <span className="eligibility-badge">
+                    Courses: {job.eligibleCourses.join(", ")}
+                  </span>
+                )}
+                {job.eligibleBranches && job.eligibleBranches.length > 0 && (
+                  <span className="eligibility-badge">
+                    Branches: {job.eligibleBranches.join(", ")}
+                  </span>
+                )}
+              </div>
               <div className="job-card-actions">
                 <Link to={`/job/${job._id}`} className="btn-primary-outline">
                   View Details

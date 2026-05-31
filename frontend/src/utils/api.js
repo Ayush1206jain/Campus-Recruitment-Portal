@@ -16,4 +16,24 @@ api.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
+// Response interceptor: handle auth errors globally
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error?.response?.status;
+    if (status === 401 || status === 403) {
+      try {
+        // Clear token and force login so user can re-authenticate
+        localStorage.removeItem("token");
+        // Optional: show a message then redirect
+        window.alert("Session expired. Please login again.");
+        window.location.href = "/login";
+      } catch (e) {
+        // ignore
+      }
+    }
+    return Promise.reject(error);
+  },
+);
+
 export default api;

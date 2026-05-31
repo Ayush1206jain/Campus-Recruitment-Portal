@@ -1,6 +1,7 @@
 const Student = require("../models/Student");
 const User = require("../models/User");
 const cloudinary = require("../config/cloudinary");
+const axios = require("axios");
 
 /**
  * @desc    Get current student profile
@@ -105,7 +106,10 @@ exports.uploadResume = async (req, res, next) => {
     // Update student profile with the Cloudinary URL
     const student = await Student.findOneAndUpdate(
       { user: req.user.id },
-      { resume: uploadResponse.secure_url },
+      {
+        resume: uploadResponse.secure_url,
+        resumePublicId: uploadResponse.public_id,
+      },
       { new: true },
     );
 
@@ -115,6 +119,171 @@ exports.uploadResume = async (req, res, next) => {
       message: "Resume uploaded successfully",
     });
   } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc Stream the current student's resume through the server
+ * @route GET /api/students/resume/view
+ * @access Private (Student only)
+ */
+exports.viewResume = async (req, res, next) => {
+  try {
+    console.log(
+      "[viewResume] called by user:",
+      req.user ? req.user.id : "(no user)",
+    );
+    const student = await Student.findOne({ user: req.user.id });
+    if (!student || !student.resume) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Resume not found" });
+    }
+
+    console.log("[viewResume] fetching remote url:", student.resume);
+
+    // Fetch the remote file as stream and pipe it to the response
+    const response = await axios.get(student.resume, {
+      responseType: "stream",
+      validateStatus: (s) => s >= 200 && s < 500, // let us handle non-2xx
+    });
+
+    if (response.status !== 200) {
+      console.error(
+        "[viewResume] upstream fetch failed",
+        response.status,
+        response.statusText,
+      );
+
+      // If Cloudinary returned Unauthorized, try generating a signed URL via SDK
+      if (response.status === 401) {
+        try {
+          // Prefer stored public_id if available
+          const publicId =
+            student.resumePublicId ||
+            (() => {
+              try {
+                const parsed = new URL(student.resume);
+                const afterUpload = parsed.pathname.split("/upload/")[1] || "";
+                const withoutVersion = afterUpload.replace(/^v\d+\//, "");
+                return withoutVersion.replace(/\.[^/.]+$/, "");
+              } catch (e) {
+                return null;
+              }
+            })();
+
+          if (!publicId) {
+            console.error(
+              "[viewResume] no public_id available to try Cloudinary API",
+            );
+            return res
+              .status(502)
+              .json({ success: false, message: "Resume is not accessible" });
+          }
+
+          console.log(
+            "[viewResume] attempting cloudinary.api.resource for public_id:",
+            publicId,
+          );
+          const info = await cloudinary.api.resource(publicId, {
+            resource_type: "raw",
+          });
+          const fetchUrl = info.secure_url || info.url;
+          if (!fetchUrl) {
+            console.error(
+              "[viewResume] cloudinary api.resource returned no URL",
+            );
+            return res
+              .status(502)
+              .json({
+                success: false,
+                message: "Resume not accessible from Cloudinary",
+              });
+          }
+
+          console.log("[viewResume] fetched resource secure_url via API");
+          const signedRes = await axios.get(fetchUrl, {
+            responseType: "stream",
+            validateStatus: (s) => s >= 200 && s < 500,
+          });
+          if (signedRes.status !== 200) {
+            console.error(
+              "[viewResume] resource upstream fetch failed",
+              signedRes.status,
+              signedRes.statusText,
+            );
+            return res
+              .status(signedRes.status)
+              .json({
+                success: false,
+                message: `Failed to fetch resume (resource upstream ${signedRes.status})`,
+              });
+          }
+
+          const contentType2 =
+            signedRes.headers["content-type"] || "application/pdf";
+          res.setHeader("Content-Type", contentType2);
+          res.setHeader("Content-Disposition", "inline; filename=resume.pdf");
+          res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
+          return signedRes.data.pipe(res).on("error", (err) => {
+            console.error("[viewResume] resource stream pipe error:", err);
+            try {
+              res.end();
+            } catch (e) {}
+          });
+        } catch (fallbackErr) {
+          console.error(
+            "[viewResume] cloudinary API fallback failed:",
+            fallbackErr && fallbackErr.message
+              ? fallbackErr.message
+              : fallbackErr,
+          );
+          return res
+            .status(502)
+            .json({
+              success: false,
+              message: "Failed to fetch resume from Cloudinary",
+            });
+        }
+      }
+
+      // forward upstream status and message for other statuses
+      return res.status(response.status).json({
+        success: false,
+        message: `Failed to fetch resume (upstream ${response.status})`,
+      });
+    }
+
+    // Prefer content-type from upstream, but default to PDF
+    const contentType = response.headers["content-type"] || "application/pdf";
+    res.setHeader("Content-Type", contentType);
+    // Suggest inline display
+    res.setHeader("Content-Disposition", "inline; filename=resume.pdf");
+    // Allow browsers to see Content-Disposition header
+    res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
+
+    response.data.pipe(res).on("error", (err) => {
+      console.error("[viewResume] stream pipe error:", err);
+      // If piping fails, ensure we don't leave the request hanging
+      try {
+        res.end();
+      } catch (e) {}
+    });
+  } catch (error) {
+    console.error(
+      "[viewResume] error:",
+      error && error.message ? error.message : error,
+    );
+    // If upstream returned an error object, try to surface useful info
+    if (error.response) {
+      return res.status(error.response.status || 500).json({
+        success: false,
+        message:
+          error.response.data?.message ||
+          `Upstream error ${error.response.status}`,
+      });
+    }
     next(error);
   }
 };

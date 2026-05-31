@@ -115,6 +115,22 @@ const JobDetail = () => {
                   : "TBD"}
               </p>
             </div>
+            <div>
+              <h4>Eligibility</h4>
+              <p>
+                {job.minCgpa
+                  ? `Min CGPA: ${job.minCgpa}`
+                  : "No CGPA requirement"}
+                <br />
+                {job.eligibleCourses && job.eligibleCourses.length > 0
+                  ? `Courses: ${job.eligibleCourses.join(", ")}`
+                  : "All courses"}
+                <br />
+                {job.eligibleBranches && job.eligibleBranches.length > 0
+                  ? `Branches: ${job.eligibleBranches.join(", ")}`
+                  : "All branches"}
+              </p>
+            </div>
           </div>
 
           <div className="job-section">

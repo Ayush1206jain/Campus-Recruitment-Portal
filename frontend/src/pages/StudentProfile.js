@@ -84,6 +84,12 @@ const StudentProfile = () => {
       const res = await api.post("/students/resume", uploadData);
       setResumeUrl(res.data.data.resume || "");
       setResumeSuccess("Resume uploaded successfully.");
+      // Show immediate popup confirmation
+      try {
+        window.alert("Resume uploaded successfully.");
+      } catch (e) {
+        /* ignore */
+      }
       setResumeFile(null);
       await fetchProfile();
     } catch (err) {
@@ -238,9 +244,51 @@ const StudentProfile = () => {
           <label>Resume</label>
           {resumeUrl ? (
             <div style={{ marginBottom: "8px" }}>
-              <a href={resumeUrl} target="_blank" rel="noopener noreferrer">
+              <button
+                type="button"
+                className="link-like"
+                onClick={async () => {
+                  try {
+                    setError("");
+                    // Request authenticated resume as blob
+                    const token = localStorage.getItem("token");
+                    if (!token) {
+                      setError("Not logged in. Please login to view resume.");
+                      return;
+                    }
+
+                    const res = await api.get("/students/resume/view", {
+                      responseType: "blob",
+                    });
+
+                    const contentType =
+                      res.headers["content-type"] || "application/pdf";
+                    const blob = new Blob([res.data], { type: contentType });
+                    const url = window.URL.createObjectURL(blob);
+                    window.open(url, "_blank");
+                    // Revoke after a short delay
+                    setTimeout(() => window.URL.revokeObjectURL(url), 60000);
+                  } catch (err) {
+                    console.error("Resume fetch failed:", err);
+                    if (err.response) {
+                      const status = err.response.status;
+                      if (status === 401 || status === 403) {
+                        setError(
+                          "Session expired or unauthorized. Please login again.",
+                        );
+                        return;
+                      }
+                      setError(
+                        err.response.data?.message || "Failed to fetch resume",
+                      );
+                    } else {
+                      setError("Network error while fetching resume");
+                    }
+                  }
+                }}
+              >
                 View current resume
-              </a>
+              </button>
             </div>
           ) : (
             <p style={{ marginBottom: "8px", color: "#555" }}>

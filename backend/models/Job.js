@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 /**
  * Job Model
@@ -7,50 +7,66 @@ const mongoose = require('mongoose');
 const jobSchema = new mongoose.Schema({
   company: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Company',
-    required: true
+    ref: "Company",
+    required: true,
   },
   title: {
     type: String,
-    required: [true, 'Please provide job title'],
+    required: [true, "Please provide job title"],
     trim: true,
-    maxlength: [100, 'Job title cannot exceed 100 characters']
+    maxlength: [100, "Job title cannot exceed 100 characters"],
   },
   description: {
     type: String,
-    required: [true, 'Please provide job description'],
-    maxlength: [5000, 'Description cannot exceed 5000 characters']
+    required: [true, "Please provide job description"],
+    maxlength: [5000, "Description cannot exceed 5000 characters"],
   },
   requirements: {
     type: String, // Can be text or bullet points
-    required: [true, 'Please provide job requirements/skills']
+    required: [true, "Please provide job requirements/skills"],
   },
   location: {
     type: String,
-    required: [true, 'Please provide job location']
+    required: [true, "Please provide job location"],
   },
   salary: {
     type: String, // e.g., "12 LPA", "Not Disclosed"
-    required: [true, 'Please provide salary details']
+    required: [true, "Please provide salary details"],
   },
   type: {
     type: String,
-    enum: ['Full-time', 'Internship', 'Contract'],
-    default: 'Full-time'
+    enum: ["Full-time", "Internship", "Contract"],
+    default: "Full-time",
   },
   deadline: {
     type: Date,
-    required: [true, 'Please provide application deadline']
+    required: [true, "Please provide application deadline"],
+  },
+  // Minimum CGPA required (optional)
+  minCgpa: {
+    type: Number,
+    min: 0,
+    max: 10,
+    required: [true, "Please provide minimum CGPA required"],
+  },
+  // Eligible branches and courses
+  eligibleBranches: {
+    type: [String],
+    default: [],
+  },
+  eligibleCourses: {
+    type: [String],
+    default: [],
   },
   status: {
     type: String,
-    enum: ['Open', 'Closed'],
-    default: 'Open'
+    enum: ["Open", "Closed"],
+    default: "Open",
   },
   createdAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
-module.exports = mongoose.model('Job', jobSchema);
+module.exports = mongoose.model("Job", jobSchema);

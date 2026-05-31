@@ -1,25 +1,28 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
-  };
-
-  const handleBack = () => {
-    navigate(-1);
+    navigate("/", { replace: true });
+    // Force reload to avoid stale cached UI when user presses browser back
+    try {
+      window.location.reload();
+    } catch (e) {
+      // ignore
+    }
   };
 
   return (
     <nav className="navbar">
       <div className="navbar-container">
         <Link to={user ? "/dashboard" : "/"} className="navbar-logo">
-          CampusPortal
+          Campus Connect
         </Link>
         <ul className="nav-menu">
           {!user && (
@@ -34,11 +37,17 @@ const Navbar = () => {
               <li className="nav-item">
                 <span className="nav-links">Hello, {user.name}</span>
               </li>
-              <li className="nav-item">
-                <button className="btn-back" onClick={handleBack}>
-                  Back
-                </button>
-              </li>
+              {location.pathname === "/post-job" && (
+                <li className="nav-item">
+                  <button
+                    className="btn-back"
+                    onClick={() => navigate("/dashboard")}
+                    style={{ marginRight: "8px" }}
+                  >
+                    Back
+                  </button>
+                </li>
+              )}
               <li className="nav-item">
                 <button className="btn-logout" onClick={handleLogout}>
                   Logout
